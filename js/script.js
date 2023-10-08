@@ -1,4 +1,4 @@
-import * as THREE from "https://unpkg.com/three@0.126.1/build/three.module.js";
+import * as THREE from "three";
 
 import umbrellaVertexShader from "./shaders/umbrella/vertex.glsl?raw";
 import umbrellaFragmentShader from "./shaders/umbrella/fragment.glsl?raw";
