@@ -3585,7 +3585,7 @@ void main()
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 
     vUv = uv;
-}`,Ud=`// https://www.shadertoy.com/view/Wt33Wf
+}`,Ud=`
 
 uniform float iTime;
 uniform vec2 iMouse;
