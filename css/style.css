@@ -8,6 +8,9 @@ body {
   height: 100%;
   display: block;
 }
+body {
+  background: linear-gradient(#e4e0ba, #f7d9aa);
+}
 #loading {
   position: fixed;
   top: 0;

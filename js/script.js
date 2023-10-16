@@ -1,14 +1,46 @@
-import * as THREE from "three";
+import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js";
 
-import umbrellaVertexShader from "./shaders/umbrella/vertex.glsl?raw";
-import umbrellaFragmentShader from "./shaders/umbrella/fragment.glsl?raw";
+import umbrellaVertexShader from "./shaders/umbrella/vertex.glsl";
+import umbrellaFragmentShader from "./shaders/umbrella/fragment.glsl";
+
+// Import other modules and dependencies
+
+const shaderFiles = {
+  vertexShader: "./shaders/umbrella/vertex.glsl",
+  fragmentShader: "./shaders/umbrella/fragment.glsl",
+};
+
+let vertexShaderSource, fragmentShaderSource;
+
+// Fetch the vertex shader
+fetch(shaderFiles.vertexShader)
+  .then((response) => response.text())
+  .then((data) => {
+    vertexShaderSource = data;
+
+    // Fetch the fragment shader
+    return fetch(shaderFiles.fragmentShader);
+  })
+  .then((response) => response.text())
+  .then((data) => {
+    fragmentShaderSource = data;
+
+    // Now you have the shader source code, create shader objects and use them in your code
+    const vertexShader = new THREE.Shader(vertexShaderSource, shaderType);
+    const fragmentShader = new THREE.Shader(fragmentShaderSource, shaderType);
+
+    // Use the shaders in your materials or other parts of your code
+    // ...
+
+    // Continue with the rest of your code
+  })
+  .catch((error) => {
+    console.error("Error loading shaders:", error);
+  });
 
 const canvas = document.querySelector("#c");
 
 const renderer = new THREE.WebGLRenderer({ canvas });
-
-const loadManager = new THREE.LoadingManager();
-const loader = new THREE.TextureLoader(loadManager);
 
 const fov = 75;
 const aspect = 2; // the canvas default
@@ -63,31 +95,54 @@ const monitorPlaneMaterial = new THREE.ShaderMaterial({
 });
 const material = new THREE.MeshPhongMaterial(colors);
 
-function makeInstance(geometry, colors, x, y) {
-  const cube = new THREE.Mesh(geometry2, material, nameSecond);
-  scene.add(cube);
+function makeInstance(geometry, colors, x, y, name) {
+  const smallCube = new THREE.Mesh(geometry2, material);
+  smallCube.userData.name = name;
 
-  cube.position.x = x;
-  cube.position.y = y;
+  smallCube.userData.action1 = () => {
+    console.log("Action 1 executed");
+    smallCube.material.color = new THREE.Color(0xf5986e);
+    scene.background = new THREE.Color(0x68c3c0);
+  };
 
-  return cube;
+  smallCube.userData.action2 = () => {
+    console.log("Action 2 executed");
+    smallCube.material.color = new THREE.Color(0x68c3c0);
+    scene.background = new THREE.Color(0xf25346);
+  };
+
+  smallCube.userData.action3 = () => {
+    console.log("Action 3 executed");
+    smallCube.material.color = new THREE.Color(0xf25346);
+    scene.background = new THREE.Color(0xf5986e);
+  };
+
+  scene.add(smallCube);
+
+  smallCube.position.x = x;
+  smallCube.position.y = y;
+
+  return smallCube;
 }
 
 function makeInstanceCenter(geometry, x, y) {
-  const cube = new THREE.Mesh(geometry, monitorPlaneMaterial, nameFirst);
+  const cube = new THREE.Mesh(geometry, monitorPlaneMaterial);
+  cube.userData.name = "BigCube";
   scene.add(cube);
   cube.position.x = x;
   cube.position.y = y;
 
   return cube;
 }
-
 const cubes = [
-  makeInstance(geometry, colors.red, 0, -1.5),
-  makeInstance(geometry, colors.blue, -2, -1.5),
-  makeInstance(geometry, colors.white, 2, -1.5),
-  makeInstanceCenter(geometry, 0, 0.8),
+  makeInstance(geometry, colors.red, 0, -1.5, "SmallCube1"),
+  makeInstance(geometry, colors.blue, -2, -1.5, "SmallCube2"),
+  makeInstance(geometry, colors.white, 2, -1.5, "SmallCube3"),
 ];
+
+// Later in your code, when you have 'intersects' available, you can execute the actions like this:
+
+const centerCube = makeInstanceCenter(geometry, 0, 0.8);
 
 const clock = new THREE.Clock();
 
@@ -124,37 +179,48 @@ const render = (time) => {
   }
 
   cubes.forEach((cube, ndx) => {
-    const speed = 1 + ndx * 0.1;
-    const rot = time * speed;
-    cube.rotation.x = rot;
-    cube.rotation.y = rot;
+    if (cube) {
+      const speed = 1 + ndx * 0.1;
+      const rot = time * speed;
+      cube.rotation.x = rot;
+      cube.rotation.y = rot;
+    }
   });
+
+  const speed = 1 + 1 * 0.1;
+  const rot = time * speed;
+  centerCube.rotation.x = rot;
+  centerCube.rotation.y = rot;
 
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(scene.children);
 
   for (let i = 0; i < intersects.length; i++) {
-    if (intersects[i].object.id === 16) {
-      intersects[i].object.material.uniforms.iTime.value = 10;
-      intersects[i].object.material.uniforms.uUvScale.value = new THREE.Vector2(
-        1.4,
-        1.4
-      );
+    const object = intersects[i].object;
+    const customName = object.userData.name;
 
-      intersects[i].object.material.uniforms.adjustVec3.value =
-        new THREE.Vector3(1.9, 2.4, 0.6);
-      console.log(intersects[i].object);
-      intersects[i].object.parameters = new THREE.BoxGeometry(2, 2, 2);
-      console.log(intersects[i].object.material);
-    } else if (intersects[i].object.id === 15) {
-      intersects[i].object.material.color.set(0xf5986e);
-      scene.background = new THREE.Color(0x68c3c0);
-    } else if (intersects[i].object.id === 14) {
-      intersects[i].object.material.color.set(0x68c3c0);
-      scene.background = new THREE.Color(0xf25346);
-    } else if (intersects[i].object.id === 13) {
-      intersects[i].object.material.color.set(0xf25346);
-      scene.background = new THREE.Color(0xf5986e);
+    switch (customName) {
+      case "SmallCube1":
+        object.userData.action1(); // Execute the first action
+
+        break;
+      case "SmallCube2":
+        object.userData.action2(); // Execute the second action
+
+        break;
+      case "SmallCube3":
+        object.userData.action3();
+        break;
+
+      case "BigCube":
+        console.log(intersects);
+        intersects[0].object.material.uniforms.iTime.value = 10;
+        intersects[0].object.material.uniforms.uUvScale.value =
+          new THREE.Vector2(1.4, 1.4);
+        intersects[0].object.material.uniforms.adjustVec3.value =
+          new THREE.Vector3(1.9, 2.4, 0.6);
+        intersects[0].object.parameters = new THREE.BoxGeometry(2, 2, 2);
+        break;
     }
   }
 
