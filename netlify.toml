@@ -2,3 +2,9 @@
 for = "/*.glsl"
   [headers.values]
   Content-Type = "text/plain"
+
+[build]
+  base = "/" # Set your base directory if needed
+  publish = "dist"
+  command = "npm run custom-build" # Change this to your custom build command
+
