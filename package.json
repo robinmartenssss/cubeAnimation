@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "custom-build": "glslify ./js/shaders/umbrella/fragment.glslvertex.glsl -o ./js/shaders/umbrella/fragment.glslvertex.glsl.js && glslify ./js/shaders/umbrella/fragment.glslfragment.glsl -o ./js/shaders/umbrella/fragment.glslfragment.glsl.js",
+    "custom-build": "glslify ./js/shaders/umbrella/vertex.glsl -o ./js/shaders/umbrella/vertex.glsl.js && glslify ./js/shaders/umbrella/fragment.glsl -o ./js/shaders/umbrella/fragment.glsl.js",
+
     "preview": "vite preview"
   },
   "keywords": [],
